@@ -7,6 +7,11 @@ module.exports = class GloomPlugin {
     this._path = path;
     this._configs = configs;
     this._plugins = null;
+    this._cwd = configs.cwd || process.cwd();
+  }
+
+  path(...args) {
+    return Path.join(this._cwd, ...args);
   }
 
   getPath() {
