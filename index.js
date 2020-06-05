@@ -35,7 +35,9 @@ module.exports = class GloomPlugin {
   init() {
     this.load();
     for (const plugin in this._plugins) {
-      this._plugins[plugin](this._configs, this);
+      if (typeof this._plugins[plugin] === 'function') {
+        this._plugins[plugin](this._configs, this);
+      }
     }
   }
 
