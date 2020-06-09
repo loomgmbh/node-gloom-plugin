@@ -32,7 +32,7 @@ module.exports = class GloomPlugin {
     const list = FS.readdirSync(base);
 
     for (const file of list) {
-      this._plugins[Path.basename(file)] = {
+      this._plugins[Path.parse(file).name] = {
         loaded: false,
         func: require(Path.join(base, file))
       };
