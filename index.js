@@ -3,11 +3,22 @@ const FS = require('fs');
 
 module.exports = class GloomPlugin {
 
+  static findRoot() {
+    let root = process.cwd();
+    while (true) {
+      if (FS.existsSync(Path.join(root, 'gulpfile.js'))) {
+        return root;
+      }
+      if (root === Path.join(root, '..')) return null;
+      root = Path.join(root, '..');
+    }
+  }
+
   constructor(path, configs = {}) {
     this._path = path;
     this._configs = configs;
     this._plugins = null;
-    this._cwd = configs.cwd || process.cwd();
+    this._cwd = GloomPlugin.findRoot();
   }
 
   path(...args) {
