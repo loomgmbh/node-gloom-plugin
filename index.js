@@ -32,18 +32,35 @@ module.exports = class GloomPlugin {
     const list = FS.readdirSync(base);
 
     for (const file of list) {
-      this._plugins[Path.basename(file)] = require(Path.join(base, file));
+      this._plugins[Path.basename(file)] = {
+        loaded: false,
+        func: require(Path.join(base, file))
+      };
     }
     return this;
   }
 
-  init() {
+  init(order) {
     this.load();
-    for (const plugin in this._plugins) {
-      if (typeof this._plugins[plugin] === 'function') {
-        this._plugins[plugin](this._configs, this);
-      }
+    for (const name of (order || [])) {
+      this.initPlugin(name);
     }
+    return this.initRemaining();
+  }
+
+  initPlugin(name) {
+    if (this._plugins[name] && !this._plugins[name].loaded && typeof this._plugins[name].func === 'function') {
+      this._plugins[name].loaded = true;
+      this._plugins[plugin].func(this._configs, this);
+    }
+    return this;
+  }
+
+  initRemaining() {
+    for (const plugin in this._plugins) {
+      this.initPlugin(plugin);
+    }
+    return this;
   }
 
 }
