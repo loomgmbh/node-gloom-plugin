@@ -51,7 +51,7 @@ module.exports = class GloomPlugin {
     if (this._plugins !== null) return;
     this._plugins = {};
     if (this.config.loadTasks && Array.isArray(this.config.loadTasks)) {
-      for (const task in this.config.loadTasks) {
+      for (const task of this.config.loadTasks) {
         this.loadTask(task);
       }
     }
@@ -80,12 +80,12 @@ module.exports = class GloomPlugin {
     }
   }
 
-  loadTask(module) {
+  loadTask(task) {
     let path = null;
     try {
-      path = require.resolve(module + '/tasks');
+      path = require.resolve(task + '/tasks');
     } catch (e) {
-      console.error('Module "' + module + '" should be load for tasks but has no root "tasks" directory.');
+      console.error('Module "' + task + '" should be load for tasks but has no root "tasks" directory or is not installed.');
     }
     if (path !== null) {
       this.loadDirectory(path);
@@ -101,8 +101,8 @@ module.exports = class GloomPlugin {
   }
 
   initRemaining() {
-    for (const plugin in this._plugins) {
-      plugin.init(this);
+    for (const name in this._plugins) {
+      this.getPlugin(name).init(this);
     }
     return this;
   }
@@ -110,7 +110,9 @@ module.exports = class GloomPlugin {
   getTaggedPlugins(tags) {
     const plugins = {};
 
-    for (const plugin of this._plugins) {
+    for (const name in this._plugins) {
+      const plugin = this.getPlugin(name);
+
       for (const tag of tags) {
         if (plugin.hasTag(tag)) {
           plugins[plugin.key()] = plugin;

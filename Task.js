@@ -45,7 +45,7 @@ module.exports = class Task {
   }
 
   key() {
-    throw BadMethodCallException('The "key" method needs to be implemented in ' + this.name);
+    throw BadMethodCallException('The "key" method needs to be implemented in ' + this.constructor.name);
   }
 
   /**
@@ -53,7 +53,7 @@ module.exports = class Task {
    * @param {import('./index')} manager 
    */
   task(config, manager) {
-    throw BadMethodCallException('The "task" method needs to be implemented in ' + this.name);
+    throw BadMethodCallException('The "task" method needs to be implemented in ' + this.constructor.name);
   }
   
 }
