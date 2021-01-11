@@ -1,5 +1,8 @@
 const Path = require('path');
 const FS = require('fs');
+const Gulp = require('gulp');
+
+const Task = require('./Task');
 
 module.exports = class GloomPlugin {
 
@@ -21,6 +24,10 @@ module.exports = class GloomPlugin {
     this._cwd = GloomPlugin.findRoot();
   }
 
+  get config() {
+    return this._configs;
+  }
+
   path(...args) {
     return Path.join(this._cwd, ...args);
   }
@@ -32,6 +39,10 @@ module.exports = class GloomPlugin {
     return Path.join(process.cwd(), this._path);
   }
 
+  /**
+   * @param {string} name 
+   * @returns {Task}
+   */
   getPlugin(name) {
     return this._plugins[name] || null;
   }
@@ -39,39 +50,84 @@ module.exports = class GloomPlugin {
   load() {
     if (this._plugins !== null) return;
     this._plugins = {};
-    const base = this.getPath();
-    const list = FS.readdirSync(base);
-
-    for (const file of list) {
-      this._plugins[Path.parse(file).name] = {
-        loaded: false,
-        func: require(Path.join(base, file))
-      };
+    if (this.config.loadTasks && Array.isArray(this.config.loadTasks)) {
+      for (const task in this.config.loadTasks) {
+        this.loadTask(task);
+      }
     }
+    this.loadDirectory(this.getPath());
     return this;
   }
 
-  init(order) {
+  loadDirectory(path) {
+    if (!FS.existsSync(path)) return;
+    const list = FS.readdirSync(path);
+
+    for (const file of list) {
+      const Subject = require(Path.join(path, file));
+      
+      if (Subject.prototype instanceof Task) {
+        const task = new Subject(path);
+
+        if (this._plugins[task.key()] !== undefined) {
+          console.log('Overwrite ' + this._plugins[task.key()].id() + ' with ' + task.id());
+        }
+        this._plugins[task.key()] = task;
+        if (this.config.tags && this.config.tags[task.key()]) {
+          task.setTags(this.config.tags[task.key()]);
+        }
+      }
+    }
+  }
+
+  loadTask(module) {
+    let path = null;
+    try {
+      path = require.resolve(module + '/tasks');
+    } catch (e) {
+      console.error('Module "' + module + '" should be load for tasks but has no root "tasks" directory.');
+    }
+    if (path !== null) {
+      this.loadDirectory(path);
+    }
+  }
+
+  init() {
     this.load();
-    for (const name of (order || [])) {
-      this.initPlugin(name);
+    for (const name of (this.config.initOrder || [])) {
+      this.getPlugin(name).init(this);
     }
     return this.initRemaining();
   }
 
-  initPlugin(name) {
-    if (this._plugins[name] && !this._plugins[name].loaded && typeof this._plugins[name].func === 'function') {
-      this._plugins[name].loaded = true;
-      this._plugins[name].func(this._configs, this);
+  initRemaining() {
+    for (const plugin in this._plugins) {
+      plugin.init(this);
     }
     return this;
   }
 
-  initRemaining() {
-    for (const plugin in this._plugins) {
-      this.initPlugin(plugin);
+  getTaggedPlugins(tags) {
+    const plugins = {};
+
+    for (const plugin of this._plugins) {
+      for (const tag of tags) {
+        if (plugin.hasTag(tag)) {
+          plugins[plugin.key()] = plugin;
+          break;
+        }
+      }
     }
-    return this;
+    return plugins;
+  }
+
+  findTask(fullTask, min = 1) {
+    const splits = fullTask.split(':');
+    do {
+      if (Gulp.task(splits.join(':')) !== undefined) return splits.join(':');
+      splits.pop();
+    } while (splits.length >= min);
+    return null;
   }
 
 }
