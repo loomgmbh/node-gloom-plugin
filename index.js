@@ -50,9 +50,9 @@ module.exports = class GloomPlugin {
   load() {
     if (this._plugins !== null) return;
     this._plugins = {};
-    if (this.config.loadTasks && Array.isArray(this.config.loadTasks)) {
-      for (const task of this.config.loadTasks) {
-        this.loadTask(task);
+    if (this.config.loadPlugins && Array.isArray(this.config.loadPlugins)) {
+      for (const plugin of this.config.loadPlugins) {
+        this.loadPlugins(plugin);
       }
     }
     this.loadDirectory(this.getPath());
@@ -67,25 +67,29 @@ module.exports = class GloomPlugin {
       const Subject = require(Path.join(path, file));
       
       if (Subject.prototype instanceof Task) {
-        const task = new Subject(path);
+        const plugin = new Subject(path);
 
-        if (this._plugins[task.key()] !== undefined) {
-          console.log('Overwrite ' + this._plugins[task.key()].id() + ' with ' + task.id());
+        if (this.config.excludePlugins && this.config.excludePlugins.includes(plugin.key())) {
+          console.log('Exclude plugin ' + this._plugins[plugin.key()].id());
+          continue;
         }
-        this._plugins[task.key()] = task;
-        if (this.config.tags && this.config.tags[task.key()]) {
-          task.setTags(this.config.tags[task.key()]);
+        if (this._plugins[plugin.key()] !== undefined) {
+          console.log('Overwrite ' + this._plugins[plugin.key()].id() + ' with ' + plugin.id());
+        }
+        this._plugins[plugin.key()] = plugin;
+        if (this.config.tags && this.config.tags[plugin.key()]) {
+          plugin.setTags(this.config.tags[plugin.key()]);
         }
       }
     }
   }
 
-  loadTask(task) {
+  loadPlugins(plugin) {
     let path = null;
     try {
-      path = require.resolve(task + '/tasks');
+      path = require.resolve(plugin + '/tasks');
     } catch (e) {
-      console.error('Module "' + task + '" should be load for tasks but has no root "tasks" directory or is not installed.');
+      console.error('Module "' + plugin + '" should be load for tasks but has no root "tasks" directory or is not installed.');
     }
     if (path !== null) {
       this.loadDirectory(path);
