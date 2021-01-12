@@ -50,9 +50,9 @@ module.exports = class GloomPlugin {
   load() {
     if (this._plugins !== null) return;
     this._plugins = {};
-    if (this.config.loadPlugins && Array.isArray(this.config.loadPlugins)) {
-      for (const plugin of this.config.loadPlugins) {
-        this.loadPlugins(plugin);
+    if (this.config.loadModules && Array.isArray(this.config.loadModules)) {
+      for (const module of this.config.loadModules) {
+        this.loadModules(module);
       }
     }
     this.loadDirectory(this.getPath());
@@ -84,12 +84,12 @@ module.exports = class GloomPlugin {
     }
   }
 
-  loadPlugins(plugin) {
+  loadModules(module) {
     let path = null;
     try {
-      path = require.resolve(plugin + '/tasks');
+      path = require.resolve(module + '/tasks');
     } catch (e) {
-      console.error('Module "' + plugin + '" should be load for tasks but has no root "tasks" directory or is not installed.');
+      console.error('Module "' + module + '" should be load for tasks but has no root "tasks" directory or is not installed.');
     }
     if (path !== null) {
       this.loadDirectory(path);
