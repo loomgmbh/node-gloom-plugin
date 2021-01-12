@@ -70,7 +70,7 @@ module.exports = class GloomPlugin {
         const plugin = new Subject(path);
 
         if (this.config.excludePlugins && this.config.excludePlugins.includes(plugin.key())) {
-          console.log('Exclude plugin ' + this._plugins[plugin.key()].id());
+          console.log('Exclude plugin ' + plugin.id());
           continue;
         }
         if (this._plugins[plugin.key()] !== undefined) {
