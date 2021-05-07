@@ -87,7 +87,9 @@ module.exports = class GloomPlugin {
   loadModules(module) {
     let path = null;
     try {
-      path = require.resolve(module + '/tasks');
+      const info = require(module);
+      info.root = Path.dirname(require.resolve(module));
+      path = Path.join(info.root, info.tasks);
     } catch (e) {
       console.error('Module "' + module + '" should be load for tasks but has no root "tasks" directory or is not installed.');
     }
