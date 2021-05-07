@@ -1,0 +1,46 @@
+{
+  "loadModules": [
+    "gloom-styleguide" // load the gloom-styleguide module and the tasks defined in directory "tasks"
+  ],
+  "excludePlugins": [
+    "dummy" // exclude task key`s from loading
+  ],
+  "tags": {
+    "scripts": ["watcher:mini"] // overwrite all tags from task scripts and only watch scripts in task "watch:mini"
+  },
+  "initOrder": [ // change order of tasks load, all undefined tasks will load after the order
+    "scripts", 
+    "styles"
+  ],
+  "defaultTasks": [ // define tasks which will be executed by command "gulp"
+    "scripts",
+    "styles"
+  ],
+  "watchers": { // overwrite all watcher tasks
+    "default": [], // required to load task "gulp watch"
+    "mini": [], // generate a task "gulp watch:mini" which load all tasks tagged with "watcher" or "watcher:mini" and execute the gulp task "<task>:watch:mini" or "<task>:watch"
+    "js": ["scripts"] // generate a task "gulp watch:js" with default task "scripts" (only usefull with watch tasks)
+  },
+  "vendor": "gulp/src/vendor", // define the vendor directory all paths are relative to this path
+
+  // ... overwrite task default settings
+
+  "styles": { // overwrite all settings for "styles" task
+    "files": [
+      "gulp/src/**/*.sass",
+      "!./gulp/src/vendor/**/*.sass",
+      "!./gulp/src/variables/*.sass",
+      "!gulp/src/**/_*.sass"
+    ],
+    "variables": "./gulp/src/variables",
+    "dest": "./built/styles",
+    "watch": [
+      "gulp/src/**/*.sass"
+    ]
+  },
+
+  "scripts": {
+    // ...
+  }
+
+}
