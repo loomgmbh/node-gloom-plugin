@@ -39,6 +39,16 @@ module.exports = class GloomPlugin {
     return Path.join(process.cwd(), this._path);
   }
 
+  mkdirs(cwd, ...dirs) {
+    let path = cwd;
+    for (const dir of dirs) {
+      path = Path.join(path, dir);
+      if (!FS.existsSync(path)) {
+        FS.mkdirSync(path);
+      }
+    }
+  }
+
   /**
    * @param {string} name 
    * @returns {Task}

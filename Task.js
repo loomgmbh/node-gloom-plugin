@@ -30,6 +30,7 @@ module.exports = class Task {
    * @param {import('./index')} manager 
    */
   init(manager) {
+    this.manager = manager;
     if (!this.loaded) {
       const defaultConfig = this.defaultConfig();
 
